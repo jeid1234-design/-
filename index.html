@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>💥 욕설 변환기 💥</title>
+<style>
+  body { margin:0; padding:0; background:linear-gradient(135deg,#74b9ff,#6c5ce7); font-family:"맑은 고딕", sans-serif;}
+  .container { max-width:1100px; margin:0 auto; display:flex; min-height:100vh; background:#ffffffdd;
+    backdrop-filter:blur(6px); border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.15);}
+  .left-pane {flex:1.5; padding:35px; border-right:2px solid #ddd; display:flex; flex-direction:column; align-items:center;}
+  .right-pane {flex:1; padding:35px; display:flex; flex-direction:column;}
+  h1 {text-align:center; font-size:28px; margin-bottom:10px;}
+  p {text-align:center; margin-bottom:20px;}
+  textarea {width:100%; min-height:100px; padding:12px; font-size:15px; border:2px solid #dfe6e9;
+    border-radius:10px; resize:vertical; outline:none;}
+  textarea:focus{border-color:#0984e3;}
+  .controls {display:flex; gap:10px; margin:15px 0;}
+  select, button {font-size:15px; padding:10px 16px; border-radius:8px; border:1px solid #ccc;}
+  button {background:linear-gradient(90deg,#0984e3,#6c5ce7); border:none; color:#fff; font-weight:bold; cursor:pointer;}
+  button:hover{box-shadow:0 4px 8px rgba(0,0,0,.2);}
+  #output-wrapper {margin-top:25px; width:100%; text-align:center;}
+  #output-title {font-size:20px; font-weight:600; margin-bottom:12px;}
+  #output {
+    font-size:34px; font-weight:bold; color:#0984e3;
+    background:#f1f2f6; padding:24px; border-radius:12px; min-height:90px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #btn-add-my-record{margin-top:10px; display:none;}
+  .history-section{margin-bottom:20px;}
+  .history-title{font-weight:bold; font-size:17px; border-bottom:2px solid #636e72; margin-bottom:10px; padding-bottom:5px;}
+  #my-records-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  #my-records-form > div {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+  #my-records-form input[type="text"] {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    flex: 1;
+  }
+  #my-record-add-btn {
+    min-width: 100px;
+    font-size: 15px;
+    border-radius: 10px;
+    background: linear-gradient(90deg,#0984e3,#6c5ce7);
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+  }
+  #btn-copy-my-records {
+    padding: 12px 24px;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    background: linear-gradient(90deg,#0984e3,#6c5ce7);
+    color: #fff;
+    border: none;
+    user-select: none;
+    margin: 18px auto 12px auto;
+    width: 210px;
+    display: block;
+  }
+  #my-record-list, #history-list {
+    background:#f9fbff;
+    border-radius:10px;
+    padding:10px;
+    min-height:50px;
+    max-height:150px;
+    overflow-y:auto;
+    font-size:14px;
+    max-width:380px;
+    margin: 0 auto;
+  }
+  .my-record-item, .history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .my-record-item:last-child,.history-item:last-child{border-bottom:none;}
+  .myrecord-text {
+    flex: 1;
+    word-break: break-word;
+  }
+  .myrecord-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .btn-edit,.btn-delete {
+    padding: 4px 10px;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+  }
+  .btn-edit {
+    background: #0984e3;
+  }
+  .btn-edit:hover {
+    background: #6c5ce7;
+  }
+  .btn-delete {
+    background: #d63031;
+  }
+  .btn-delete:hover {
+    background: #b32020;
+  }
+
+  /* 모바일 대응 */
+  @media (max-width: 768px) {
+    .container {
+      flex-wrap: wrap;
+      min-width: 320px;
+      padding: 10px;
+    }
+    .left-pane, .right-pane {
+      flex: 1 1 100%;
+      max-width: 100%;
+      padding: 15px 10px;
+      border-right: none;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    #output {
+      font-size: 26px;
+      padding: 18px;
+      min-height: 70px;
+    }
+    #my-record-list, #history-list {
+      max-width: 100%;
+      padding: 8px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="left-pane">
+    <h1>💥 욕설 변환기 💥</h1>
+    <p>내가, 너가, 그리고 우리가 만들어 가보자구 🎶</p>
+    <textarea id="inputText" placeholder="문장을 입력하세요..."></textarea>
+    <div class="controls">
+      <label for="wordLengthSelect">글자 수:</label>
+      <select id="wordLengthSelect">
+        <option value="random">무작위</option>
+        <option value="1">1글자</option>
+        <option value="2">2글자</option>
+        <option value="3">3글자</option>
+        <option value="4">4글자</option>
+      </select>
+      <button id="convertBtn">🚀 변환하기</button>
+    </div>
+    <div id="output-wrapper">
+      <div id="output-title">✨ 결과:</div>
+      <div id="output"></div>
+      <button id="btn-add-my-record">➕ 내 기록에 추가하기</button>
+    </div>
+  </div>
+  <div class="right-pane">
+    <div class="history-section">
+      <div class="history-title">📋 내 기록</div>
+      <div id="my-records-form">
+        <input type="text" id="nicknameInput" placeholder="닉네임 (예: 철수)" />
+        <div>
+          <input type="text" id="my-record-input-original" placeholder="원래 욕설 입력" />
+          <input type="text" id="my-record-input-replaced" placeholder="나만의 변환어 입력" />
+        </div>
+        <button id="my-record-add-btn">➕ 추가</button>
+      </div>
+      <div id="my-record-list"></div>
+      <button id="btn-copy-my-records">📎 내 기록 URL 복사</button>
+    </div>
+    <div class="history-section">
+      <div class="history-title">📝 변환 기록</div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+</div>
+<script>
+const swearWords=[
+  '씨발','씨발년','씨발놈','시발','시발년','시발놈','개새끼','병신','존나','썅',
+  '개좆같네','좆같네','좆','느금마','니미',
+  '좇같네','개좇같네','좇같은','좇만이','좆만이','씹새','씹새끼' 
+];
+const firstSoundMap={
+  '씨발':['쌉','쌔','쏴','샤','싸','쌰','쏘','쑤'],
+  '씨발년':['쌍','쌀','쌰','쓩','썽','싸'],
+  '씨발놈':['씽','쌍','썅','쌰','썅','썽','써'],
+  '씹새':['쏘','쑤','쓔','쑈','씽','쌩'],
+  '씹새끼':['쏘','쑤','쓔','쑈','씽','쌩'],
+  '썅':['쑝','썽','쑤','씽'],
+  '개새끼':['깔','껄','꿍','꽝','꺄','꾜','껴'],
+  '병신':['빡','뻑','빵','뿜'],
+  '존나':['쫙','쭉','쭈','쪽','찟'],
+  '시발':['쌉','쌔','쏴','샤','싸','쌰','쏘','쑤'],
+  '시발년':['쌍','쌀','쌰','쓩','썽','싸'],
+  '시발놈':['쌍','쌀','쌰','쓩','썽','싸'],
+  '개좆같네':['깨','끼','다','따','띠','땅','떵'],
+  '좆같네':['다','따','띠','땅','떵','띵'],
+  '좆':['따','뚜','또','땅','떵','띵'],
+  '느금마':['미','머','겨','갸','교'],
+  '니미':['마','무','님','닝','닐'],
+  '좇같네':['따','또','땍','띵','텅'],
+  '개좇같네':['꺄','껴','끼','쿄','꾜'],
+  '좇같은':['도','또','땅','띵'],
+  '좇만이':['땡','뚱','떵','띠','따'],
+  '좆만이':['또','띠','따','띵','떵']
+};
+const onsetConsonants=['ㅋ','ㅍ','ㅅ','ㅈ','ㄱ','ㄷ','ㅂ','ㄴ','ㄹ'];
+const vowels=['ㅏ','ㅓ','ㅑ','ㅕ','ㅗ','ㅜ','ㅛ','ㅠ','ㅡ','ㅣ','ㅐ','ㅔ'];
+const codaConsonants=['','ㄱ','ㄴ','ㅁ','ㅇ','ㅂ','ㄹ'];
+
+const forbiddenPatterns=[/가슴/,/자지/,/보지/,/섹스/,/쎅스/,/섹/,/sex/i,/섹쓰/,/꼬추/,/고추/];
+function isForbiddenWord(word){return forbiddenPatterns.some(p=>p.test(word));}
+function makeHangulSyllable(cho,jung,jong){
+  const choList=['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const jungList=['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+  const jongList=['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  return String.fromCharCode(0xAC00 + choList.indexOf(cho) * 21 * 28 + jungList.indexOf(jung) * 28 + jongList.indexOf(jong));
+}
+function generateNewWord(lengthOption,swearWord){
+  let wordLength=lengthOption==='random'?Math.floor(Math.random()*4)+1:parseInt(lengthOption);
+  if(isNaN(wordLength)||wordLength<1)wordLength=2;
+  const maxAttempts=100;
+  for(let attempt=0;attempt<maxAttempts;attempt++){
+    let word='';
+    for(let i=0;i<wordLength;i++){
+      const cho=onsetConsonants[Math.floor(Math.random()*onsetConsonants.length)];
+      const jung=vowels[Math.floor(Math.random()*vowels.length)];
+      const jong=i===wordLength-1&&Math.random()<0.5?codaConsonants[Math.floor(Math.random()*codaConsonants.length)]:'';
+      word+=makeHangulSyllable(cho,jung,jong);
+    }
+    if(firstSoundMap[swearWord]){
+      word=firstSoundMap[swearWord][Math.floor(Math.random()*firstSoundMap[swearWord].length)]+word.slice(1);
+    }
+    if(isForbiddenWord(word))continue;
+    return word;
+  }
+  return Array(wordLength).fill('가').join('');
+}
+const inputText=document.getElementById('inputText');
+const wordLengthSelect=document.getElementById('wordLengthSelect');
+const convertBtn=document.getElementById('convertBtn');
+const outputDiv=document.getElementById('output');
+const btnAddMyRecord=document.getElementById('btn-add-my-record');
+const historyList=document.getElementById('history-list');
+const myRecordList=document.getElementById('my-record-list');
+const myRecordInputOriginal=document.getElementById('my-record-input-original');
+const myRecordInputReplaced=document.getElementById('my-record-input-replaced');
+const myRecordAddBtn=document.getElementById('my-record-add-btn');
+const btnCopyMyRecords=document.getElementById('btn-copy-my-records');
+const nicknameInput=document.getElementById('nicknameInput');
+
+function addHistoryItem(original,replaced){
+  const div=document.createElement('div');
+  div.className='history-item';
+
+  const left=document.createElement('div');
+  left.className='history-text';
+  left.textContent=original;
+
+  const arrow=document.createElement('div');
+  arrow.className='history-arrow';
+  arrow.textContent='→';
+
+  const right=document.createElement('div');
+  right.className='history-result';
+  right.textContent=replaced;
+
+  div.appendChild(left);
+  div.appendChild(arrow);
+  div.appendChild(right);
+
+  historyList.prepend(div);
+}
+function addMyRecordItem(original,replaced){
+  if(!original||!replaced)return;
+  const div=document.createElement('div');
+  div.className='my-record-item';
+  const textDiv=document.createElement('div');
+  textDiv.className='myrecord-text';
+  textDiv.textContent=`${original} → ${replaced}`;
+  const btnsDiv=document.createElement('div');
+  btnsDiv.className='myrecord-btns';
+  const btnEdit=document.createElement('button');
+  btnEdit.className='btn-edit';
+  btnEdit.textContent='수정';
+  btnEdit.addEventListener('click',()=>{
+    const newOri=prompt('원래 텍스트 수정',original);
+    if(newOri===null)return;
+    const newRep=prompt('변환 텍스트 수정',replaced);
+    if(newRep===null)return;
+    if(newOri.trim()&&newRep.trim()){
+      textDiv.textContent=`${newOri.trim()} → ${newRep.trim()}`;
+    }
+  });
+  const btnDelete=document.createElement('button');
+  btnDelete.className='btn-delete';
+  btnDelete.textContent='삭제';
+  btnDelete.addEventListener('click',()=>{myRecordList.removeChild(div);});
+  btnsDiv.appendChild(btnEdit);
+  btnsDiv.appendChild(btnDelete);
+  div.appendChild(textDiv);
+  div.appendChild(btnsDiv);
+  myRecordList.prepend(div);
+}
+
+convertBtn.addEventListener('click',()=>{
+  const text=inputText.value.trim();
+  if(!text){outputDiv.textContent="문장을 입력해주세요!";return;}
+  let replaced=text;
+  const sortedSwears=[...swearWords].sort((a,b)=>b.length-a.length);
+  sortedSwears.forEach(word=>{
+    const regex=new RegExp(word,'gi');
+    replaced=replaced.replace(regex,()=>generateNewWord(wordLengthSelect.value,word));
+  });
+  outputDiv.textContent=replaced;
+  btnAddMyRecord.style.display='inline-block';
+  addHistoryItem(text,replaced);
+});
+btnAddMyRecord.addEventListener('click',()=>{
+  addMyRecordItem(inputText.value.trim(),outputDiv.textContent.trim());
+  btnAddMyRecord.style.display='none';
+});
+myRecordAddBtn.addEventListener('click',()=>{
+  if(myRecordInputOriginal.value&&myRecordInputReplaced.value){
+    addMyRecordItem(myRecordInputOriginal.value,myRecordInputReplaced.value);
+    myRecordInputOriginal.value='';
+    myRecordInputReplaced.value='';
+  }
+});
+function encodeRecordsShort(records){
+  return btoa(unescape(encodeURIComponent(records.join('\n')))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function decodeRecordsShort(str){
+  try{return decodeURIComponent(escape(atob(str.replace(/-/g,'+').replace(/_/g,'/')))).split('\n');}
+  catch(e){return []}
+}
+btnCopyMyRecords.addEventListener('click',()=>{
+  if(myRecordList.children.length===0){alert("내 기록이 없습니다.");return;}
+  const records=[];
+  for(let item of myRecordList.children){
+    records.push(item.querySelector('.myrecord-text').textContent);
+  }
+  const recordId=encodeRecordsShort(records);
+  const nickname=nicknameInput.value.trim();
+  const url=location.origin+location.pathname+'?myRecords='+recordId+(nickname?'&nickname='+encodeURIComponent(nickname):'');
+  navigator.clipboard.writeText(url).then(()=>alert("내 기록 URL이 복사되었습니다!")).catch(()=>alert("복사 실패"));
+});
+window.addEventListener('load',()=>{
+  const params=new URLSearchParams(location.search);
+  const rec=params.get('myRecords');
+  const nick=params.get('nickname');
+  if(nick){
+    document.querySelector('h1').textContent=`💥 ${nick}의 욕설 변환기 💥`;
+  }
+  if(rec){
+    const stored=decodeRecordsShort(rec);
+    stored.forEach(line=>{
+      const idx=line.indexOf('→');
+      if(idx!==-1){
+        const o=line.slice(0,idx).trim();
+        const r=line.slice(idx+1).trim();
+        if(o&&r)addMyRecordItem(o,r);
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
