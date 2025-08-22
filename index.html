@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>💥 욕설 변환기 💥</title>
+<title>💥 비속어 변환기 💥</title>
 <style>
   body { margin:0; padding:0; background:linear-gradient(135deg,#74b9ff,#6c5ce7); font-family:"맑은 고딕", sans-serif;}
   .container { max-width:1100px; margin:0 auto; display:flex; min-height:100vh; background:#ffffffdd;
@@ -152,7 +152,7 @@
 <body>
 <div class="container">
   <div class="left-pane">
-    <h1>💥 욕설 변환기 💥</h1>
+    <h1>💥 비속어 변환기 💥</h1>
     <p>내가, 너가, 그리고 우리가 만들어 가보자구 🎶</p>
     <textarea id="inputText" placeholder="문장을 입력하세요..."></textarea>
     <div class="controls">
@@ -195,7 +195,7 @@
 <script>
 const swearWords=[
   '씨발','씨발년','씨발놈','시발','시발년','시발놈','개새끼','병신','존나','썅',
-  '개좆같네','좆같네','좆','느금마','니미',
+  '개년','개좆같네','좆같네','좆','느금마','니미',
   '좇같네','개좇같네','좇같은','좇만이','좆만이','씹새','씹새끼' 
 ];
 const firstSoundMap={
@@ -211,6 +211,7 @@ const firstSoundMap={
   '시발':['쌉','쌔','쏴','샤','싸','쌰','쏘','쑤'],
   '시발년':['쌍','쌀','쌰','쓩','썽','싸'],
   '시발놈':['쌍','쌀','쌰','쓩','썽','싸'],
+  '개년':['가','갸','거','겨','고','교','깅','강','걍']
   '개좆같네':['깨','끼','다','따','띠','땅','떵'],
   '좆같네':['다','따','띠','땅','떵','띵'],
   '좆':['따','뚜','또','땅','떵','띵'],
@@ -226,7 +227,7 @@ const onsetConsonants=['ㅋ','ㅍ','ㅅ','ㅈ','ㄱ','ㄷ','ㅂ','ㄴ','ㄹ'];
 const vowels=['ㅏ','ㅓ','ㅑ','ㅕ','ㅗ','ㅜ','ㅛ','ㅠ','ㅡ','ㅣ','ㅐ','ㅔ'];
 const codaConsonants=['','ㄱ','ㄴ','ㅁ','ㅇ','ㅂ','ㄹ'];
 
-const forbiddenPatterns=[/가슴/,/자지/,/보지/,/섹스/,/쎅스/,/섹/,/sex/i,/섹쓰/,/꼬추/,/고추/];
+const forbiddenPatterns=[/가슴/,/자지/,/보지/,/섹스/,/쎅스/,/섹/,/sex/i,/섹쓰/,/꼬추/,/고추/,/년/];
 function isForbiddenWord(word){return forbiddenPatterns.some(p=>p.test(word));}
 function makeHangulSyllable(cho,jung,jong){
   const choList=['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
@@ -368,7 +369,7 @@ window.addEventListener('load',()=>{
   const rec=params.get('myRecords');
   const nick=params.get('nickname');
   if(nick){
-    document.querySelector('h1').textContent=`💥 ${nick}님의 욕설 변환기 💥`;
+    document.querySelector('h1').textContent=`💥 ${nick}님의 비속어 변환기 💥`;
   }
   if(rec){
     const stored=decodeRecordsShort(rec);
@@ -385,4 +386,5 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
 
